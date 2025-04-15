@@ -38,7 +38,7 @@ async function getForecast(location) {
 
   let outputHTML = "";
 
-  // 🔥 Hourly (3 days)
+  // 3-Day Hourly Forecast (full 24 hours)
   for (let i = 0; i < 3; i++) {
     const day = forecast[i];
     const date = day.date;
@@ -46,20 +46,21 @@ async function getForecast(location) {
 
     outputHTML += `<div class="forecast-day"><h3>${date} (Hourly)</h3><div class="hour-container">`;
 
-    for (let h = 6; h <= 20; h += 2) {
+    for (let h = 0; h < 24; h++) {
       const hour = day.hour[h];
-      const pressure = hour.pressure_mb;
+      const pressureMB = hour.pressure_mb;
+      const pressureINHG = (pressureMB / 33.8639).toFixed(2);
       const wind = hour.wind_mph;
       const temp = hour.temp_f;
       const sky = hour.condition.text;
 
-      const bite = calculateBiteRating(pressure, 0, moon, wind, temp, 0, sky);
+      const bite = calculateBiteRating(pressureMB, 0, moon, wind, temp, 0, sky);
 
       outputHTML += `
         <div class="hour-slot ${bite >= 4.5 ? "hot" : bite >= 3 ? "mid" : "cold"}">
           <strong>${hour.time.split(" ")[1]}</strong><br>
           <b>${bite.toFixed(1)}/5</b><br>${sky}<br>
-          💨 ${wind} mph<br>🌡️ ${temp}°F<br>📈 ${pressure} mb
+          💨 ${wind} mph<br>🌡️ ${temp}°F<br>📈 ${pressureINHG} inHg
         </div>
       `;
     }
@@ -67,7 +68,7 @@ async function getForecast(location) {
     outputHTML += `</div></div>`;
   }
 
-  // 🔥 Daily (Day 4–10)
+  // 7-Day Daily Forecast
   for (let i = 3; i < forecast.length; i++) {
     const day = forecast[i];
     const date = day.date;
@@ -75,9 +76,10 @@ async function getForecast(location) {
     const wind = day.day.maxwind_mph;
     const temp = day.day.avgtemp_f;
     const sky = day.day.condition.text;
-    const pressure = day.hour[12].pressure_mb;
+    const pressureMB = day.hour[12].pressure_mb;
+    const pressureINHG = (pressureMB / 33.8639).toFixed(2);
 
-    const bite = calculateBiteRating(pressure, 0, moon, wind, temp, 0, sky);
+    const bite = calculateBiteRating(pressureMB, 0, moon, wind, temp, 0, sky);
 
     outputHTML += `
       <div class="forecast-day ${bite >= 4.5 ? "hot" : bite >= 3 ? "mid" : "cold"}">
@@ -87,7 +89,7 @@ async function getForecast(location) {
         <p>💨 Wind: ${wind} mph</p>
         <p>🌡️ Temp: ${temp}°F</p>
         <p>☁️ Sky: ${sky}</p>
-        <p>📈 Pressure: ${pressure} mb</p>
+        <p>📈 Pressure: ${pressureINHG} inHg</p>
       </div>
     `;
   }
