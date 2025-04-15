@@ -4,18 +4,17 @@ const LNG = -98.4936;
 
 async function getForecast() {
   try {
-    const res = await fetch(`https://api.stormglass.io/v2/weather/point?lat=${LAT}&lng=${LNG}&params=airTemperature,waterTemperature,cloudCover,windSpeed,pressure,moonPhase,swellHeight&source=noaa`, {
-      headers: {
-        'Authorization': API_KEY
-      }
+    const res = await fetch(`https://api.stormglass.io/v2/weather/point?lat=${LAT}&lng=${LNG}&params=airTemperature,waterTemperature,cloudCover,windSpeed,pressure,moonPhase&source=noaa`, {
+      headers: { 'Authorization': API_KEY }
     });
 
-    if (!res.ok) throw new Error("Storm Glass API error");
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
 
     const data = await res.json();
-    const hours = data.hours.slice(0, 24); // just today
+    const hours = data.hours.slice(0, 24); // Get today’s forecast
 
-    const avg = (key) => hours.map(h => h[key]?.noaa || 0).reduce((a, b) => a + b, 0) / hours.length;
+    const avg = (key) =>
+      hours.map((h) => h[key]?.noaa || 0).reduce((a, b) => a + b, 0) / hours.length;
 
     const pressure = avg("pressure");
     const airTemp = avg("airTemperature");
@@ -27,7 +26,7 @@ async function getForecast() {
     const score = calculateBiteScore({ pressure, airTemp, waterTemp, wind, clouds, moon });
     const mood = getFishingStyle(score);
 
-    const outputHTML = `
+    document.getElementById("output").innerHTML = `
       <div class="forecast-day">
         <h2>🎣 Today's Bite Forecast</h2>
         <p>🐟 Bite Rating: <strong>${score.toFixed(1)}/10</strong></p>
@@ -40,14 +39,15 @@ async function getForecast() {
         <p>☁️ Cloud Cover: ${clouds.toFixed(1)}%</p>
       </div>
     `;
-
-    document.getElementById("output").innerHTML = outputHTML;
   } catch (err) {
-    console.error("⚠️ API call failed:", err);
+    console.error("⚠️ Storm Glass API call failed:", err);
+    alert("⚠️ Error loading forecast:\n" + err.message);
+
     document.getElementById("output").innerHTML = `
       <div class="forecast-day">
         <h2>⚠️ Unable to load forecast</h2>
-        <p>Please make sure you're running this on a live server (like Vercel) or via HTTPS.</p>
+        <p>${err.message}</p>
+        <p>Make sure your API key is valid and you haven't hit your free usage limit.</p>
       </div>
     `;
   }
