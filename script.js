@@ -38,7 +38,7 @@ async function getForecast(location) {
 
   let outputHTML = "";
 
-  // 3-Day Hourly Forecast
+  // 🔥 Hourly (3 days)
   for (let i = 0; i < 3; i++) {
     const day = forecast[i];
     const date = day.date;
@@ -56,9 +56,9 @@ async function getForecast(location) {
       const bite = calculateBiteRating(pressure, 0, moon, wind, temp, 0, sky);
 
       outputHTML += `
-        <div class="hour-slot ${bite >= 8 ? "hot" : bite >= 5 ? "mid" : "cold"}">
+        <div class="hour-slot ${bite >= 4.5 ? "hot" : bite >= 3 ? "mid" : "cold"}">
           <strong>${hour.time.split(" ")[1]}</strong><br>
-          <b>${bite}/10</b><br>${sky}<br>
+          <b>${bite.toFixed(1)}/5</b><br>${sky}<br>
           💨 ${wind} mph<br>🌡️ ${temp}°F<br>📈 ${pressure} mb
         </div>
       `;
@@ -67,7 +67,7 @@ async function getForecast(location) {
     outputHTML += `</div></div>`;
   }
 
-  // 7-Day Daily Forecast
+  // 🔥 Daily (Day 4–10)
   for (let i = 3; i < forecast.length; i++) {
     const day = forecast[i];
     const date = day.date;
@@ -80,9 +80,9 @@ async function getForecast(location) {
     const bite = calculateBiteRating(pressure, 0, moon, wind, temp, 0, sky);
 
     outputHTML += `
-      <div class="forecast-day ${bite >= 8 ? "hot" : bite >= 5 ? "mid" : "cold"}">
+      <div class="forecast-day ${bite >= 4.5 ? "hot" : bite >= 3 ? "mid" : "cold"}">
         <h3>${date} (Daily)</h3>
-        <p>🐟 Bite Rating: <strong>${bite}/10</strong></p>
+        <p>🐟 Bite Rating: <strong>${bite.toFixed(1)}/5</strong></p>
         <p>🌕 Moon Phase: ${moon}</p>
         <p>💨 Wind: ${wind} mph</p>
         <p>🌡️ Temp: ${temp}°F</p>
@@ -97,13 +97,15 @@ async function getForecast(location) {
 
 function calculateBiteRating(pressure, pressureTrend, moon, wind, temp, tempTrend, sky) {
   let score = 0;
+
   if (pressure > 1010) score += 1;
-  if (moon === "Full Moon" || moon === "New Moon") score += 2;
-  else if (moon.includes("Gibbous")) score += 1;
-  if (wind >= 6 && wind <= 15) score += 2;
-  if (temp >= 66 && temp <= 78) score += 2;
-  if (sky.includes("Cloudy") && wind >= 6) score += 1;
-  return Math.max(1, Math.min(score, 10));
+  if (moon === "Full Moon" || moon === "New Moon") score += 1;
+  else if (moon.includes("Gibbous")) score += 0.5;
+  if (wind >= 6 && wind <= 15) score += 1;
+  if (temp >= 66 && temp <= 78) score += 1;
+  if (sky.includes("Cloudy") && wind >= 6) score += 0.5;
+
+  return Math.max(1, Math.min(score, 5));
 }
 
 window.onload = getUserLocation;
