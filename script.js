@@ -1,94 +1,94 @@
-const API_KEY = "cda30cf4-198c-11f0-95f7-0242ac130003-cda30d4e-198c-11f0-95f7-0242ac130003";
-const LAT = 29.4241;
-const LNG = -98.4936;
+const API_KEY = "554a3e5e4f1541df84952040251404"; // your key
+const LOCATION = "San Antonio";
 
 async function getForecast() {
-  try {
-    const res = await fetch(`https://api.stormglass.io/v2/weather/point?lat=${LAT}&lng=${LNG}&params=airTemperature,cloudCover,windSpeed,pressure,moonPhase`, {
-      headers: { 'Authorization': API_KEY }
-    });
+  const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${LOCATION}&days=10`);
+  const data = await res.json();
+  const forecast = data.forecast.forecastday;
 
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
+  let outputHTML = "";
 
-    const data = await res.json();
-    const hours = data.hours.slice(0, 24);
+  for (let i = 0; i < forecast.length; i++) {
+    const today = forecast[i];
+    const yesterday = i > 0 ? forecast[i - 1] : null;
 
-    const avg = (key) =>
-      hours.map(h => {
-        const sources = h[key];
-        if (!sources) return 0;
-        const firstVal = Object.values(sources)[0];
-        return typeof firstVal === 'number' ? firstVal : 0;
-      }).reduce((a, b) => a + b, 0) / hours.length;
+    const date = today.date;
+    const pressure = today.hour[12].pressure_mb;
+    const wind = today.day.maxwind_mph;
+    const temp = today.day.avgtemp_f;
+    const sky = today.day.condition.text;
+    const moon = today.astro.moon_phase;
 
-    const pressure = avg("pressure");
-    const airTemp = avg("airTemperature");
-    const wind = avg("windSpeed");
-    const clouds = avg("cloudCover");
-    const moon = hours[0].moonPhase ? Object.values(hours[0].moonPhase)[0] : 0;
+    const moonrise = today.astro.moonrise;
+    const moonset = today.astro.moonset;
 
-    const score = calculateBiteScore({ pressure, airTemp, wind, clouds, moon });
-    const mood = getFishingStyle(score);
+    // Feeding times
+    const major1 = addHoursToTime(moonrise, 6);
+    const major2 = addHoursToTime(moonset, 6);
 
-    document.getElementById("output").innerHTML = `
+    // Calculate pressure/temp trends
+    const pressureTrend = yesterday ? pressure - yesterday.hour[12].pressure_mb : 0;
+    const tempTrend = yesterday ? temp - yesterday.day.avgtemp_f : 0;
+
+    const biteRating = calculateBiteRating(pressure, pressureTrend, moon, wind, temp, tempTrend, sky);
+
+    outputHTML += `
       <div class="forecast-day">
-        <h2>🎣 Today's Bite Forecast</h2>
-        <p>🐟 Bite Rating: <strong>${score.toFixed(1)}/10</strong></p>
-        <p>🎣 Style: ${mood.label} ${mood.emoji}</p>
-        <p>🌕 Moon Illumination: ${(moon * 100).toFixed(0)}%</p>
-        <p>🌡️ Air Temp: ${airTemp.toFixed(1)} °C</p>
-        <p>📈 Pressure: ${pressure.toFixed(1)} hPa</p>
-        <p>💨 Wind: ${wind.toFixed(1)} m/s</p>
-        <p>☁️ Cloud Cover: ${clouds.toFixed(1)}%</p>
-      </div>
-    `;
-  } catch (err) {
-    console.error("⚠️ Storm Glass API call failed:", err);
-    alert("⚠️ Error loading forecast:\n" + err.message);
-    document.getElementById("output").innerHTML = `
-      <div class="forecast-day">
-        <h2>⚠️ Unable to load forecast</h2>
-        <p>${err.message}</p>
-        <p>Double check your API key and make sure your account still has available requests.</p>
+        <h3>${date}</h3>
+        <p>🐟 Bite Rating: <strong>${biteRating}/10</strong></p>
+        <p>🌕 Moon Phase: ${moon}</p>
+        <p>🎯 Major Feeding: ${major1}, ${major2}</p>
+        <p>🔹 Minor Feeding: ${moonrise}, ${moonset}</p>
+        <p>📈 Pressure: ${pressure} mb (${pressureTrend >= 1 ? "Rising" : pressureTrend <= -1 ? "Falling" : "Steady"})</p>
+        <p>🌡️ Temp: ${temp}°F (${tempTrend >= 1 ? "Warming" : tempTrend <= -1 ? "Cooling" : "Stable"})</p>
+        <p>💨 Wind: ${wind} mph</p>
+        <p>⛅ Sky: ${sky}</p>
       </div>
     `;
   }
+
+  document.getElementById("output").innerHTML = outputHTML;
 }
 
-function calculateBiteScore({ pressure, airTemp, wind, clouds, moon }) {
+function calculateBiteRating(pressure, pressureTrend, moon, wind, temp, tempTrend, sky) {
   let score = 0;
 
-  if (pressure >= 1010 && pressure <= 1020) score += 2;
-  else if (pressure < 1005) score += 1;
-  else score -= 1;
+  // Pressure trend
+  if (pressureTrend > 1) score += 4;
+  else if (pressureTrend >= 0.5) score += 2;
+  else if (pressureTrend < -1) score -= 1;
 
-  if (moon <= 0.1 || moon >= 0.9) score += 2.5;
-  else if (moon >= 0.4 && moon <= 0.6) score -= 1;
+  // Moon phase
+  if (moon === "Full Moon" || moon === "New Moon") score += 3;
+  else if (moon.includes("Gibbous")) score += 1;
 
-  if (wind >= 3 && wind <= 7) score += 2;
-  else if (wind < 2) score -= 0.5;
+  // Wind sweet zone
+  if (wind >= 6 && wind <= 15) score += 2;
 
-  if (clouds >= 30 && clouds <= 70) score += 1;
-  else if (clouds < 20) score -= 0.5;
+  // Temp zone + trend simulation (with water lag)
+  if (temp >= 66 && temp <= 78) score += 1;
+  if (tempTrend > 1) score += 2; // warming water = good
+  if (tempTrend < -1) score -= 1; // cold snap = bad
 
-  if (airTemp >= 16 && airTemp <= 27) score += 1;
+  // Sky conditions
+  if (sky.includes("Cloudy") && wind >= 6) score += 1;
 
-  return curveScore(score);
+  return Math.max(1, Math.min(score, 10)); // clamp between 1–10
 }
 
-function curveScore(score) {
-  if (score >= 9.5) return 9.5 + Math.random() * 0.5;
-  if (score >= 8.5) return 8.5 + Math.random();
-  if (score >= 7) return 7 + Math.random();
-  if (score >= 5) return 5 + Math.random() * 1.5;
-  if (score >= 3) return 3 + Math.random() * 1.2;
-  return 1 + Math.random() * 1.5;
-}
+function addHoursToTime(timeStr, hoursToAdd) {
+  if (!timeStr || timeStr === "No moonrise" || timeStr === "No moonset") return "N/A";
 
-function getFishingStyle(score) {
-  if (score <= 3) return { label: "Finesse", emoji: "🐌" };
-  if (score <= 6) return { label: "Mixed", emoji: "⚖️" };
-  return { label: "Power", emoji: "⚡" };
+  const [hourMin, ampm] = timeStr.split(' ');
+  let [hour, min] = hourMin.split(':').map(Number);
+
+  if (ampm === "PM" && hour !== 12) hour += 12;
+  if (ampm === "AM" && hour === 12) hour = 0;
+
+  const date = new Date();
+  date.setHours(hour + hoursToAdd, min);
+
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 window.onload = getForecast;
