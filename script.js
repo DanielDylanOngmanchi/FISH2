@@ -4,23 +4,23 @@ const LNG = -98.4936;
 
 async function getForecast() {
   try {
-    const res = await fetch(`https://api.stormglass.io/v2/weather/point?lat=${LAT}&lng=${LNG}&params=airTemperature,cloudCover,windSpeed,pressure,moonPhase&source=noaa`, {
+    const res = await fetch(`https://api.stormglass.io/v2/weather/point?lat=${LAT}&lng=${LNG}&params=airTemperature,cloudCover,windSpeed,pressure,moonPhase`, {
       headers: { 'Authorization': API_KEY }
     });
 
     if (!res.ok) throw new Error(`API error: ${res.status}`);
 
     const data = await res.json();
-    const hours = data.hours.slice(0, 24); // today’s forecast
+    const hours = data.hours.slice(0, 24);
 
     const avg = (key) =>
-      hours.map((h) => h[key]?.noaa || 0).reduce((a, b) => a + b, 0) / hours.length;
+      hours.map((h) => h[key]?.sg || 0).reduce((a, b) => a + b, 0) / hours.length;
 
     const pressure = avg("pressure");
     const airTemp = avg("airTemperature");
     const wind = avg("windSpeed");
     const clouds = avg("cloudCover");
-    const moon = hours[0].moonPhase?.noaa || 0;
+    const moon = hours[0].moonPhase?.sg || 0;
 
     const score = calculateBiteScore({ pressure, airTemp, wind, clouds, moon });
     const mood = getFishingStyle(score);
