@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fish Forecast</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>🎣 Fish Forecast</h1>
+    <div id="output"></div>
+    <input type="text" id="zipInput" placeholder="Enter ZIP code" />
+    <button onclick="updateByZip()">Update Location</button>
+  </div>
+
+  <div id="admin-login" style="text-align:center; margin-top: 3rem;">
+    <input type="text" id="triggerInput" placeholder="Trout" />
+    <input type="password" id="adminPassword" placeholder="Password" style="display:none;" />
+    <button onclick="checkAdminLogin()" style="display:none;">Login</button>
+  </div>
+
+  <footer style="text-align: center; margin-top: 2rem;">Made by Daniel Ongmanchi</footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

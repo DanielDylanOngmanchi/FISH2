@@ -1,0 +1,98 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #dff5ff;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+#output {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+input[type="text"],
+input[type="password"] {
+  padding: 0.5rem;
+  margin: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover {
+  background: #0056b3;
+}
+.forecast-day {
+  background: #f0faff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: left;
+}
+.forecast-day.hot {
+  border-left: 6px solid #28a745;
+}
+.forecast-day.mid {
+  border-left: 6px solid #ffc107;
+}
+.forecast-day.cold {
+  border-left: 6px solid #dc3545;
+}
+.hour-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  scroll-snap-type: x mandatory;
+}
+.hour-slot {
+  flex: 0 0 auto;
+  background: #e9faff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: 140px;
+  scroll-snap-align: start;
+  text-align: center;
+  font-size: 0.85rem;
+  border: 1px solid #ccc;
+}
+.hour-slot.hot {
+  border-left: 4px solid #28a745;
+}
+.hour-slot.mid {
+  border-left: 4px solid #ffc107;
+}
+.hour-slot.cold {
+  border-left: 4px solid #dc3545;
+}
+@media (max-width: 600px) {
+  .container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  .hour-slot {
+    width: 120px;
+    font-size: 0.75rem;
+  }
+}

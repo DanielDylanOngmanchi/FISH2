@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Visitor Analytics</h1>
+    <div id="analytics"></div>
+    <div id="summary" style="margin-top: 2rem;"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqKY0ivA-LFEjEl3XliZYC657HF4FLGGc",
+      authDomain: "fish-ba387.firebaseapp.com",
+      projectId: "fish-ba387",
+      storageBucket: "fish-ba387.appspot.com",
+      messagingSenderId: "215996805936",
+      appId: "1:215996805936:web:818188624124383ded8ef5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadVisitors() {
+      const snapshot = await getDocs(collection(db, "visitors"));
+      let html = "";
+      let count = 1;
+      let visitCount = 0;
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      snapshot.forEach((docItem) => {
+        const d = docItem.data();
+        const timestamp = new Date(d.timestamp);
+
+        if (timestamp >= oneWeekAgo) visitCount++;
+
+        html += `
+          <div class="forecast-day">
+            <h3>User ${count++}:</h3>
+            <p><strong>IP:</strong> ${d.ip}</p>
+            <p><strong>City:</strong> ${d.city}</p>
+            <p><strong>Region:</strong> ${d.region}</p>
+            <p><strong>Country:</strong> ${d.country}</p>
+            <p><strong>Timezone:</strong> ${d.timezone}</p>
+            <p><strong>ISP:</strong> ${d.isp}</p>
+            <p><strong>Time:</strong> ${timestamp.toLocaleString()}</p>
+          </div>
+        `;
+      });
+
+      setTimeout(() => {
+        document.getElementById("analytics").innerHTML = html || "<p>No visitors yet.</p>";
+        document.getElementById("summary").innerHTML = `
+          <h3>📆 Site Visits (Last 7 Days): ${visitCount}</h3>
+          <p style="font-style: italic;">🗑️ Logs auto-clear every 24 hours at 23:00</p>
+        `;
+      }, 1000);
+    }
+
+    loadVisitors();
+  </script>
+
+  <script type="module" src="cleanupIPLogs.js"></script>
+</body>
+</html>
