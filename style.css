@@ -1,56 +1,92 @@
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #dff5ff;
-    margin: 0;
-    padding: 0;
-  }
-  
+  font-family: 'Segoe UI', sans-serif;
+  background: #dff5ff;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+#output {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.forecast-day {
+  background: #f0faff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: left;
+}
+
+.forecast-day.hot {
+  border-left: 6px solid #28a745;
+}
+
+.forecast-day.mid {
+  border-left: 6px solid #ffc107;
+}
+
+.forecast-day.cold {
+  border-left: 6px solid #dc3545;
+}
+
+.hour-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  scroll-snap-type: x mandatory;
+}
+
+.hour-slot {
+  flex: 0 0 auto;
+  background: #e9faff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: 140px;
+  scroll-snap-align: start;
+  text-align: center;
+  font-size: 0.85rem;
+  border: 1px solid #ccc;
+}
+
+.hour-slot.hot {
+  border-left: 4px solid #28a745;
+}
+
+.hour-slot.mid {
+  border-left: 4px solid #ffc107;
+}
+
+.hour-slot.cold {
+  border-left: 4px solid #dc3545;
+}
+
+@media (max-width: 600px) {
   .container {
-    max-width: 800px;
-    margin: 2rem auto;
-    background: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    text-align: center;
-  }
-  
-  button {
-    background: #0d6efd;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.25rem;
-    font-size: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-bottom: 1rem;
-  }
-  
-  button:hover {
-    background: #0b5ed7;
-  }
-  
-  #output {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-  }
-  
-  .forecast-day {
-    background: #f0faff;
-    border: 1px solid #ccc;
-    border-radius: 10px;
+    margin: 1rem;
     padding: 1rem;
-    width: 220px;
-    text-align: left;
   }
-  
-  .forecast-day h3 {
-    margin-top: 0;
+
+  .hour-slot {
+    width: 120px;
+    font-size: 0.75rem;
   }
-  
-  .forecast-day p {
-    margin: 0.25rem 0;
-  }
-  
+}
