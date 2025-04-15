@@ -4,26 +4,25 @@ const LNG = -98.4936;
 
 async function getForecast() {
   try {
-    const res = await fetch(`https://api.stormglass.io/v2/weather/point?lat=${LAT}&lng=${LNG}&params=airTemperature,waterTemperature,cloudCover,windSpeed,pressure,moonPhase&source=noaa`, {
+    const res = await fetch(`https://api.stormglass.io/v2/weather/point?lat=${LAT}&lng=${LNG}&params=airTemperature,cloudCover,windSpeed,pressure,moonPhase&source=noaa`, {
       headers: { 'Authorization': API_KEY }
     });
 
     if (!res.ok) throw new Error(`API error: ${res.status}`);
 
     const data = await res.json();
-    const hours = data.hours.slice(0, 24); // Get today’s forecast
+    const hours = data.hours.slice(0, 24); // today’s forecast
 
     const avg = (key) =>
       hours.map((h) => h[key]?.noaa || 0).reduce((a, b) => a + b, 0) / hours.length;
 
     const pressure = avg("pressure");
     const airTemp = avg("airTemperature");
-    const waterTemp = avg("waterTemperature");
     const wind = avg("windSpeed");
     const clouds = avg("cloudCover");
     const moon = hours[0].moonPhase?.noaa || 0;
 
-    const score = calculateBiteScore({ pressure, airTemp, waterTemp, wind, clouds, moon });
+    const score = calculateBiteScore({ pressure, airTemp, wind, clouds, moon });
     const mood = getFishingStyle(score);
 
     document.getElementById("output").innerHTML = `
@@ -33,7 +32,6 @@ async function getForecast() {
         <p>🎣 Style: ${mood.label} ${mood.emoji}</p>
         <p>🌕 Moon Illumination: ${(moon * 100).toFixed(0)}%</p>
         <p>🌡️ Air Temp: ${airTemp.toFixed(1)} °C</p>
-        <p>🌊 Water Temp: ${waterTemp.toFixed(1)} °C</p>
         <p>📈 Pressure: ${pressure.toFixed(1)} hPa</p>
         <p>💨 Wind: ${wind.toFixed(1)} m/s</p>
         <p>☁️ Cloud Cover: ${clouds.toFixed(1)}%</p>
@@ -42,7 +40,6 @@ async function getForecast() {
   } catch (err) {
     console.error("⚠️ Storm Glass API call failed:", err);
     alert("⚠️ Error loading forecast:\n" + err.message);
-
     document.getElementById("output").innerHTML = `
       <div class="forecast-day">
         <h2>⚠️ Unable to load forecast</h2>
@@ -53,7 +50,7 @@ async function getForecast() {
   }
 }
 
-function calculateBiteScore({ pressure, airTemp, waterTemp, wind, clouds, moon }) {
+function calculateBiteScore({ pressure, airTemp, wind, clouds, moon }) {
   let score = 0;
 
   if (pressure >= 1010 && pressure <= 1020) score += 2;
@@ -65,10 +62,6 @@ function calculateBiteScore({ pressure, airTemp, waterTemp, wind, clouds, moon }
 
   if (wind >= 3 && wind <= 7) score += 2;
   else if (wind < 2) score -= 0.5;
-
-  if (waterTemp >= 18 && waterTemp <= 25) score += 2.5;
-  else if (waterTemp >= 14 && waterTemp < 18) score += 1;
-  else score -= 1;
 
   if (clouds >= 30 && clouds <= 70) score += 1;
   else if (clouds < 20) score -= 0.5;
