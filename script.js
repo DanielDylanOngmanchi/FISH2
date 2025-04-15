@@ -14,13 +14,18 @@ async function getForecast() {
     const hours = data.hours.slice(0, 24);
 
     const avg = (key) =>
-      hours.map((h) => h[key]?.sg || 0).reduce((a, b) => a + b, 0) / hours.length;
+      hours.map(h => {
+        const sources = h[key];
+        if (!sources) return 0;
+        const firstVal = Object.values(sources)[0];
+        return typeof firstVal === 'number' ? firstVal : 0;
+      }).reduce((a, b) => a + b, 0) / hours.length;
 
     const pressure = avg("pressure");
     const airTemp = avg("airTemperature");
     const wind = avg("windSpeed");
     const clouds = avg("cloudCover");
-    const moon = hours[0].moonPhase?.sg || 0;
+    const moon = hours[0].moonPhase ? Object.values(hours[0].moonPhase)[0] : 0;
 
     const score = calculateBiteScore({ pressure, airTemp, wind, clouds, moon });
     const mood = getFishingStyle(score);
@@ -44,7 +49,7 @@ async function getForecast() {
       <div class="forecast-day">
         <h2>⚠️ Unable to load forecast</h2>
         <p>${err.message}</p>
-        <p>Make sure your API key is valid and you haven't hit your free usage limit.</p>
+        <p>Double check your API key and make sure your account still has available requests.</p>
       </div>
     `;
   }
